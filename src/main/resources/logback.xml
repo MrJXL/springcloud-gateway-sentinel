@@ -1,0 +1,117 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<configuration  scan="true" scanPeriod="60 seconds" debug="false">
+
+    <contextName>gateway</contextName>
+    <springProperty scope="context" name="logger.level" source="logger.level"></springProperty>
+    <property name="appName" value="sbc-service-gateway"/>
+    <!-- 默认的property -->
+    <property name="logpath" value="/data/logs/"/>
+    <!--日志格式-->
+    <property name="logpattern" value="%d{yyyy-MM-dd HH:mm:ss.SSS} [%tid] [%thread] %-5level %logger{36}|%replace(%replace(%caller{1..2}){'\w+\+\d+\s+at\s+',''}){'\s*',''}|[%tid]|[%X{logType}] %msg%n"/>
+    <!--字符编码-->
+    <property name="log.charset" value="UTF-8"/>
+    <property name="log.max.days" value="30"/>
+    <property name="log.max.size" value="1mb"/>
+    <property name="logType" value="%X{logType}"/>
+    <!-- 控制台输出格式 -->
+    <appender name="STDOUT" class="ch.qos.logback.core.ConsoleAppender">
+        <layout class="org.apache.skywalking.apm.toolkit.log.logback.v1.x.TraceIdPatternLogbackLayout">
+            <pattern>
+                    <!--%replace(%replace(%caller{1..2}){'\w+\+\d+\s+at\s+',''}){'\s*',''} 封装类上级输出-->
+                    %d{yyyy-MM-dd HH:mm:ss.SSS}[%tid][%thread]|%5p|%5t|%4c:%L||%X{logType}|%m|%n
+            </pattern>
+        </layout>
+    </appender>
+
+
+    <!-- 时间滚动输出 level全类型日志 -->
+    <appender name="INFO" class="ch.qos.logback.core.rolling.RollingFileAppender">
+        <!-- 日志记录器的滚动策略，按日期，按大小记录 -->
+        <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
+            <!-- 日志归档 -->
+            <fileNamePattern>${logpath}/${appName}/%d{yyyy-MM-dd}/${appName}-info-%i.log</fileNamePattern>
+            <timeBasedFileNamingAndTriggeringPolicy class="ch.qos.logback.core.rolling.SizeAndTimeBasedFNATP">
+                <!--文件大小临界点切割文件-->
+                <maxFileSize>${log.max.size}</maxFileSize>
+            </timeBasedFileNamingAndTriggeringPolicy>
+            <!--日志文件保留天数-->
+            <maxHistory>${log.max.days}</maxHistory>
+        </rollingPolicy>
+        <!--日志文件输出格式-->
+        <encoder class="ch.qos.logback.core.encoder.LayoutWrappingEncoder">
+            <charset>${log.charset}</charset>
+            <layout class="org.apache.skywalking.apm.toolkit.log.logback.v1.x.TraceIdPatternLogbackLayout">
+                <pattern>${logpattern}</pattern>
+            </layout>
+        </encoder>
+    </appender>
+
+    <!-- 时间滚动输出 level为 INFO 日志 -->
+    <appender name="WARN" class="ch.qos.logback.core.rolling.RollingFileAppender">
+        <!-- 日志记录器的滚动策略，按日期，按大小记录 -->
+        <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
+            <!-- 每天日志归档路径以及格式 -->
+            <fileNamePattern>${logpath}/${appName}/%d{yyyy-MM-dd}/${appName}-warn-%i.log</fileNamePattern>
+            <timeBasedFileNamingAndTriggeringPolicy class="ch.qos.logback.core.rolling.SizeAndTimeBasedFNATP">
+                <!--文件大小临界点切割文件-->
+                <maxFileSize>${log.max.size}</maxFileSize>
+            </timeBasedFileNamingAndTriggeringPolicy>
+            <!--日志文件保留天数-->
+            <maxHistory>${log.max.days}</maxHistory>
+        </rollingPolicy>
+        <!--日志文件输出格式-->
+        <encoder class="ch.qos.logback.core.encoder.LayoutWrappingEncoder">
+            <charset>${log.charset}</charset>
+            <layout class="org.apache.skywalking.apm.toolkit.log.logback.v1.x.TraceIdPatternLogbackLayout">
+                <pattern>${logpattern}</pattern>
+            </layout>
+        </encoder>
+        <!-- 此日志文件只记录info级别的 -->
+        <filter class="ch.qos.logback.classic.filter.LevelFilter">
+            <level>warn</level>
+            <onMatch>ACCEPT</onMatch>
+            <onMismatch>DENY</onMismatch>
+        </filter>
+    </appender>
+
+    <!-- 时间滚动输出 level为 WARN 日志 -->
+    <appender name="ERROR" class="ch.qos.logback.core.rolling.RollingFileAppender">
+        <!-- 日志记录器的滚动策略，按日期，按大小记录 -->
+        <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
+            <fileNamePattern>${logpath}/${appName}/%d{yyyy-MM-dd}/${appName}-error-%i.log</fileNamePattern>
+            <timeBasedFileNamingAndTriggeringPolicy class="ch.qos.logback.core.rolling.SizeAndTimeBasedFNATP">
+                <!--文件大小临界点切割文件-->
+                <maxFileSize>${log.max.size}</maxFileSize>
+            </timeBasedFileNamingAndTriggeringPolicy>
+            <!--日志文件保留天数-->
+            <maxHistory>${log.max.days}</maxHistory>
+        </rollingPolicy>
+        <!--日志文件输出格式-->
+        <encoder class="ch.qos.logback.core.encoder.LayoutWrappingEncoder">
+            <charset>${log.charset}</charset>
+            <layout class="org.apache.skywalking.apm.toolkit.log.logback.v1.x.TraceIdPatternLogbackLayout">
+                <pattern>${logpattern}</pattern>
+            </layout>
+        </encoder>
+        <!-- 此日志文件只记录warn级别的 -->
+        <filter class="ch.qos.logback.classic.filter.LevelFilter">
+            <level>error</level>
+            <onMatch>ACCEPT</onMatch>
+            <onMismatch>DENY</onMismatch>
+        </filter>
+    </appender>
+
+    <!--过滤特定日志-->
+    <logger name="logging.level.org.springframework.boot.autoconfigure" level="WARN"></logger>
+    <logger name="org.springframework.boot.autoconfigure.logging.ConditionEvaluationReportLoggingListener" level="WARN"></logger>
+
+
+    <root level="${logger.level}">
+        <appender-ref ref="STDOUT" />
+        <appender-ref ref="INFO" />
+        <appender-ref ref="WARN" />
+        <appender-ref ref="ERROR" />
+    </root>
+
+
+</configuration>
